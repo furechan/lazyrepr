@@ -4,10 +4,10 @@ build-backend = "hatchling.build"
 
 [project]
 name = "lazyrepr"
-version = "0.0.1"
+version = "0.0.2"
 readme = "README.md"
 requires-python = ">=3.8"
-description = "A mixin class for concise object representation"
+description = "Mixin class for concise object representation"
 keywords = ["repr", "mixin"]
 authors = [ {"name" = "furechan", "email" = "furechan@xsmail.com"} ]
 urls = { "homepage" = "https://github.com/furechan/lazyrepr" }

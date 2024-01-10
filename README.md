@@ -1,4 +1,4 @@
-# Python mixin class for automatic object representation
+# Python mixin class for concise object representation
 
 This library offers a mixin class `ReprMixin` that implements the `__repr__`
 and `_repr_pretty_` methods to represent objects in a concise way.
