@@ -1,0 +1,10 @@
+__pycache__/
+.vscode/
+.idea/
+build/
+dist/
+venv/
+.venv/
+.nox/
+.tox/
+*.pyc
