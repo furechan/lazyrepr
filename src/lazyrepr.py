@@ -1,9 +1,6 @@
 """ Mixin class with __repr__ and _repr_pretty_ implementations """
 
-import inspect
-
-from inspect import Parameter
-
+from inspect import Signature, Parameter
 
 INDENTATION = 4
 
@@ -14,31 +11,47 @@ def pretty_call(name, *args, **kwargs):
     params = tuple(repr(p) for p in args) + tuple("%s=%r" % kv for kv in kwargs.items())
     params = ", ".join(params)
 
-    return "%s(%s)" % (name, params)
+    return f"{name}({params})"
 
 
-def split_arguments(function, arguments):
+def split_arguments(func, arguments):
     """split arguments into args, kwargs according to function signature"""
 
-    POSITIONAL = (Parameter.POSITIONAL_ONLY, Parameter.POSITIONAL_OR_KEYWORD)
-
-    signature = inspect.signature(function)
-    parameters = signature.parameters.values()
-
+    signature = Signature.from_callable(func)
+    keyword_only = False
     args, kwargs = [], {}
 
-    for p in parameters:
+    for p in signature.parameters.values():
         v = arguments.get(p.name, p.default)
 
-        if p.kind in POSITIONAL:
-            args.append(v)
-            continue
+        if p.kind in (Parameter.VAR_POSITIONAL, Parameter.VAR_KEYWORD):
+            raise ValueError(f"Unsupported parameter type {p.kind}")
 
-        if v != p.default:
+        if p.kind == Parameter.KEYWORD_ONLY:
+            keyword_only = True
+
+        if v == p.default:
+            # skip argument if not equal to default
+            if keyword_only or not isinstance(v, (int, float)):
+                keyword_only = True
+                continue
+
+        if keyword_only:
             kwargs[p.name] = v
-            continue
+        else:
+            args.append(v)
 
     return args, kwargs
+
+
+def lazy_repr(self):
+    cname = self.__class__.__qualname__
+    args, kwargs = split_arguments(self.__init__, self.__dict__)
+
+    params = tuple(repr(p) for p in args) + tuple("%s=%r" % kv for kv in kwargs.items())
+    params = ", ".join(params)
+
+    return f"{cname}({params})"
 
 
 class ReprMixin:
@@ -47,17 +60,7 @@ class ReprMixin:
     def __repr__(self):
         """minimal repr based on __init__ signature"""
 
-        ctor = self.__init__
-        data = self.__dict__
-        cname = self.__class__.__name__
-        args, kwargs = split_arguments(ctor, data)
-
-        params = tuple(repr(p) for p in args) + tuple(
-            "%s=%r" % kv for kv in kwargs.items()
-        )
-        params = ", ".join(params)
-
-        return "%s(%s)" % (cname, params)
+        return lazy_repr(self)
 
     def _repr_pretty_(self, p, cycle):
         """IPython pretty printer handler"""
