@@ -2,7 +2,6 @@
 
 from inspect import Signature, Parameter
 
-
 INDENTATION = 4
 
 
@@ -43,7 +42,6 @@ def split_arguments(func, arguments):
             args.append(v)
 
     return args, kwargs
-
 
 
 def lazy_repr(obj):
