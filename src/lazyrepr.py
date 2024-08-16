@@ -2,6 +2,7 @@
 
 from inspect import Signature, Parameter
 
+
 INDENTATION = 4
 
 
@@ -44,23 +45,27 @@ def split_arguments(func, arguments):
     return args, kwargs
 
 
-def lazy_repr(self):
-    cname = self.__class__.__qualname__
-    args, kwargs = split_arguments(self.__init__, self.__dict__)
 
-    params = tuple(repr(p) for p in args) + tuple("%s=%r" % kv for kv in kwargs.items())
+def lazy_repr(obj):
+    """minimal __repr__ method based on __init__ signature"""
+
+    ctor = obj.__init__
+    data = obj.__dict__
+    cname = obj.__class__.__name__
+    args, kwargs = split_arguments(ctor, data)
+
+    params = tuple(repr(p) for p in args) + tuple(
+        "%s=%r" % kv for kv in kwargs.items()
+    )
     params = ", ".join(params)
 
-    return f"{cname}({params})"
+    return "%s(%s)" % (cname, params)
 
 
 class ReprMixin:
     """Mixin class with __repr__ and _repr_pretty_ implementations"""
 
-    def __repr__(self):
-        """minimal repr based on __init__ signature"""
-
-        return lazy_repr(self)
+    __repr__ = lazy_repr
 
     def _repr_pretty_(self, p, cycle):
         """IPython pretty printer handler"""
