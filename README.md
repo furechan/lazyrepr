@@ -1,31 +1,37 @@
-# Python mixin class for concise object representation
+# Python utilities for concise object representation
 
-This library offers a mixin class `ReprMixin` that implements the `__repr__`
-and `_repr_pretty_` methods to represent objects in a concise way.
+This library provides utilities to implement the `__repr__`
+and ipython `_repr_pretty_` methods to represent objects in a concise manner.
 The implementation is based on the class `__init__` method signature,
-and will consider whether its parameters are positional or optional
-to construct a representation as succinct as possible.
-Positional arguments are represented as values only and 
-optional arguments are included only when different from their default value.
+and will differentiate between positional and optional parameters
+in order to make the representation as succinct as possible.
 
-Please note this is intended to be used on lightweight classes that map arguments to attributes.
-Also it will not work with dataclasses that override the `__repr__` method.
+These methods are intended to be used on simple classes that map all their constructor arguments to attributes. Also note that `dataclasses` already implement a similar `__repr__` method by default.
 
 
 ## Usage
 
+To add a basic representation to a class you can overrides its `__repr__` method with `lazy_repr` as follows:
+
+```python
+from lazyrepr import lazy_repr
+
+class MyClass:
+    __repr__ = lazy_repr
+    ...
+```
+
+To provide both `__repr__` and ipython `_repr_pretty_` for a class just inherit from `ReprMixin`
+
 ```python
 from lazyrepr import ReprMixin
 
-class MACD(ReprMixin):
-    def __init__(self, short=12, long=26, signal=9, *, percent=False):
-        self.short = short
-        self.long = long
-        self.signal = signal
-        self.percent = percent
+class MyList(ReprMixin):
+    def __init__(self, item=()):
+        self.items = list(items)
 
-obj = MACD()
-print(obj)  # >>> MACD(12, 26, 9)
+lst = MyList(range(3))
+print(lst)  # >>> MyList([0, 1 2])
 ```
 
 ## Examples
@@ -37,10 +43,12 @@ Examples notebooks are in the `extras` folder.
 You can install this package with `pip`.
 
 ```console
-pip install git+ssh://git@github.com/furechan/lazyrepr.git
+pip install lazyrepr
 ```
 
-## Related Projects
+## Related Projects and Resources
 
 - [easyrepr](https://github.com/chrisbouchard/easyrepr)
 Python decorator to automatically generate repr strings 
+- [dataclasses](https://docs.python.org/3/library/dataclasses.html)
+Python Data Classes

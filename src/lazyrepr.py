@@ -1,67 +1,57 @@
-""" Mixin class with __repr__ and _repr_pretty_ implementations """
+""" Utilities for concise object representation """
 
-from inspect import Signature, Parameter
+import itertools
 
-INDENTATION = 4
+from inspect import Signature
 
 
-def pretty_call(name, *args, **kwargs):
-    """representation of a function call"""
+def format_call(name, *args, **kwargs):
+    """naive representation of a function call"""
 
-    params = tuple(repr(p) for p in args) + tuple("%s=%r" % kv for kv in kwargs.items())
+    params = tuple(repr(v) for v in args) + tuple("%s=%r" % kv for kv in kwargs.items())
     params = ", ".join(params)
 
     return f"{name}({params})"
 
 
-def split_arguments(func, arguments):
-    """split arguments into args, kwargs according to function signature"""
+def split_arguments(func, data):
+    """split arguments into positional and keyword arguments"""
 
     signature = Signature.from_callable(func)
-    keyword_only = False
+    parameters = signature.parameters.values()
+
     args, kwargs = [], {}
 
-    for p in signature.parameters.values():
-        v = arguments.get(p.name, p.default)
-
-        if p.kind in (Parameter.VAR_POSITIONAL, Parameter.VAR_KEYWORD):
-            raise ValueError(f"Unsupported parameter type {p.kind}")
-
-        if p.kind == Parameter.KEYWORD_ONLY:
-            keyword_only = True
-
-        if v == p.default:
-            # skip argument if not equal to default
-            if keyword_only or not isinstance(v, (int, float)):
-                keyword_only = True
-                continue
-
-        if keyword_only:
-            kwargs[p.name] = v
-        else:
+    for p in parameters:
+        v = data.get(p.name, p.default)
+        if p.kind in (p.POSITIONAL_ONLY, p.POSITIONAL_OR_KEYWORD):
             args.append(v)
-
+        elif v != p.default:
+            kwargs[p.name] = v
+    
     return args, kwargs
 
 
+def format_partial(func, data, *, name: str = None):
+    """format a partial function call"""
+    if name is None:
+        name = func.__name__
+
+    args, kwargs = split_arguments(func, data)
+
+    return format_call(name, *args, **kwargs)
+
+
+
 def lazy_repr(obj):
-    """minimal __repr__ method based on __init__ signature"""
+    """minimal __repr__ based on __init__ signature"""
+    cname = obj.__class__.__qualname__
 
-    ctor = obj.__init__
-    data = obj.__dict__
-    cname = obj.__class__.__name__
-    args, kwargs = split_arguments(ctor, data)
-
-    params = tuple(repr(p) for p in args) + tuple(
-        "%s=%r" % kv for kv in kwargs.items()
-    )
-    params = ", ".join(params)
-
-    return "%s(%s)" % (cname, params)
+    return format_partial(obj.__init__, data=obj.__dict__, name=cname)
 
 
 class ReprMixin:
-    """Mixin class with __repr__ and _repr_pretty_ implementations"""
+    """Mixin with __repr__ and _repr_pretty_ implementations"""
 
     __repr__ = lazy_repr
 
@@ -72,27 +62,22 @@ class ReprMixin:
             p.text("...")
             return
 
-        ctor = self.__init__
-        data = self.__dict__
         cname = self.__class__.__name__
-        args, kwargs = split_arguments(ctor, data)
+        args, kwargs = split_arguments(self.__init__, self.__dict__)
 
-        started = False
+        counter = itertools.count(0)
 
-        def new_item():
-            nonlocal started
-            if started:
-                p.text(",")
-                p.breakable()
-            started = True
-
-        prefix = cname + "("
-        with p.group(INDENTATION, prefix, ")"):
-            for arg in args:
-                new_item()
-                p.pretty(arg)
-            for arg_name, arg in kwargs.items():
-                new_item()
-                arg_prefix = arg_name + "="
-                with p.group(len(arg_prefix), arg_prefix):
-                    p.pretty(arg)
+        prefix, suffix = cname + "(", ")"
+        with p.group(len(prefix), prefix, suffix):
+            for v in args:
+                if next(counter):
+                    p.text(",")
+                    p.breakable()
+                p.pretty(v)
+            for k, v in kwargs.items():
+                if next(counter):
+                    p.text(",")
+                    p.breakable()
+                prefix = k + "="
+                with p.group(len(prefix), prefix):
+                    p.pretty(v)

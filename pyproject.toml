@@ -6,19 +6,19 @@ build-backend = "hatchling.build"
 name = "lazyrepr"
 version = "0.0.3"
 readme = "README.md"
-
 requires-python = ">=3.8"
 description = "Mixin class for concise object representation"
 keywords = ["repr", "mixin"]
 authors = [ {"name" = "furechan", "email" = "furechan@xsmail.com"} ]
-urls = { "homepage" = "https://github.com/furechan/lazyrepr" }
-optional-dependencies.dev = [ "ipykernel", "pytest" ]
+urls.homepage = "https://github.com/furechan/lazyrepr"
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
     "License :: OSI Approved :: MIT License",
 ]
 
+[dependency-groups]
+dev = [ "ipykernel", "pytest" ]
 
 [tool.hatch.build]
 targets.wheel.sources = ["src"]
