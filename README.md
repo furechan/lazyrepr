@@ -31,7 +31,7 @@ class MyList(ReprMixin):
         self.items = list(items)
 
 lst = MyList(range(3))
-print(lst)  # >>> MyList([0, 1 2])
+print(lst)  # >>> MyList([0, 1, 2])
 ```
 
 ## Examples
