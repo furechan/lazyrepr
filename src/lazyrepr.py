@@ -5,6 +5,14 @@ import itertools
 from inspect import Signature
 
 
+class MissingValue:
+    def __repr__(self):
+        return "?"
+
+
+MISSING = MissingValue()
+
+
 def format_call(name, *args, **kwargs):
     """naive representation of a function call"""
 
@@ -23,7 +31,7 @@ def split_arguments(func, data):
     args, kwargs = [], {}
 
     for p in parameters:
-        v = data.get(p.name, p.default)
+        v = data.get(p.name, MISSING)
         if p.kind in (p.POSITIONAL_ONLY, p.POSITIONAL_OR_KEYWORD):
             args.append(v)
         elif v != p.default:

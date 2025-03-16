@@ -50,5 +50,3 @@ pip install lazyrepr
 
 - [easyrepr](https://github.com/chrisbouchard/easyrepr)
 Python decorator to automatically generate repr strings 
-- [dataclasses](https://docs.python.org/3/library/dataclasses.html)
-Python Data Classes

@@ -4,20 +4,19 @@ from lazyrepr import ReprMixin
 from mock_printer import MockPrinter
 
 
-class MACD(ReprMixin):
-    def __init__(self, short=12, long=26, signal=9, *, percent=False):
-        self.short = short
-        self.long = long
-        self.signal = signal
-        self.percent = percent
+class Foo(ReprMixin):
+    def __init__(self, name="foo", *, flag: bool = False):
+        self.name = name
+        self.flag = flag
 
 
 def test_repr():
-    assert repr(MACD()) == "MACD(12, 26, 9)"
-    assert repr(MACD(percent=True)) == "MACD(12, 26, 9, percent=True)"
+    assert repr(Foo()) == "Foo('foo')"
+    assert repr(Foo("bar")) == "Foo('bar')"
+    assert repr(Foo(flag=True)) == "Foo('foo', flag=True)"
+    assert repr(Foo.__new__(Foo)) == "Foo(?, flag=?)"
 
 
 def test_pretty():
-    render = MockPrinter.render
-    assert render(MACD()) == "MACD(12, 26, 9)"
-    assert render(MACD(percent=True)) == "MACD(12, 26, 9, percent=True)"
+    pprint = MockPrinter.render
+    assert pprint(Foo()) == "Foo('foo')"
