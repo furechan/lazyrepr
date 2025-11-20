@@ -1,14 +1,13 @@
-""" Utilities for concise object representation """
+"""lazyrepr - a minimal __repr__ based on __init__ signature"""
+
 
 import itertools
 
 from inspect import Signature
 
-
 class MissingValue:
     def __repr__(self):
         return "?"
-
 
 MISSING = MissingValue()
 
